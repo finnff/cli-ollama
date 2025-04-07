@@ -3,6 +3,8 @@ import sys
 import json
 import argparse
 import requests
+import time
+from requests.exceptions import RequestException
 
 DEFAULT_MODEL = "qwen2.5-coder:7b"
 API_URL = "http://123.456.678.90:11434/api/generate"
@@ -40,7 +42,20 @@ def generate(prompt, model):
         "stream": True
     }
     headers = {"Content-Type": "application/json"}
-    return requests.post(API_URL, headers=headers, json=payload, stream=True)
+    
+    try:
+        response = requests.post(
+            API_URL,
+            headers=headers,
+            json=payload,
+            stream=True,
+            timeout=15
+        )
+        response.raise_for_status()
+        return response
+    except RequestException as e:
+        print(f"\033[91mError connecting to Ollama server: {str(e)}\033[0m")
+        sys.exit(1)
 
 def flush_pending(pending, state):
     """
@@ -103,7 +118,7 @@ def flush_pending(pending, state):
             state = "plain"
     return pending, state
 
-def process_stream(response, debug=False):
+def process_stream(response, debug=False, raw=False):
     """
     Process the streaming response using a state machine.
     
@@ -150,8 +165,11 @@ def process_stream(response, debug=False):
 
         token = data.get("response", "")
         debug_tokens.append(token)
-        pending += token
-        pending, state = flush_pending(pending, state)
+        if raw:
+            print_plain(token)
+        else:
+            pending += token
+            pending, state = flush_pending(pending, state)
 
     if pending:
         if state == "plain":
@@ -162,15 +180,23 @@ def process_stream(response, debug=False):
             print_cyan(pending)
 
 def main():
-    parser = argparse.ArgumentParser(description="CLI wrapper for Ollama API.")
-    parser.add_argument("prompt", nargs="+", help="Prompt to send to the LLM")
-    parser.add_argument("--MODEL", default=DEFAULT_MODEL, help="Model to use")
-    parser.add_argument("--DEBUG", action="store_true", help="Enable debug mode to print received tokens")
+    parser = argparse.ArgumentParser(
+        description="\033[1mCLI wrapper for Ollama API\033[0m",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="\033[32mExamples:\n"
+               "  python llm.py 'how to grep for multiple patterns'\n"
+               "  python llm.py --MODEL mistral 'explain docker networks'\n"
+               "  python llm.py --DEBUG --RAW 'ffmpeg command to convert mp3 to opus'\033[0m"
+    )
+    parser.add_argument("prompt", nargs="+", help="\033[36mPrompt to send to the LLM\033[0m")
+    parser.add_argument("--MODEL", default=DEFAULT_MODEL, help="\033[33mModel to use (default: %(default)s)\033[0m")
+    parser.add_argument("--DEBUG", action="store_true", help="\033[35mEnable debug mode to print received tokens\033[0m")
+    parser.add_argument("--RAW", action="store_true", help="\033[34mOutput raw text without formatting\033[0m")
     args = parser.parse_args()
 
     prompt_text = " ".join(args.prompt)
     response = generate(prompt_text, args.MODEL)
-    process_stream(response, debug=args.DEBUG)
+    process_stream(response, debug=args.DEBUG, raw=args.RAW)
 
 if __name__ == "__main__":
     main()

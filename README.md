@@ -15,6 +15,8 @@ This tool is a simple CLI wrapper for the Ollama API running a local instance of
 - **Language Marker Stripping:** Automatically strips language markers such as `bash` or `sh` from code blocks.
 - **Performance Metrics:** Calculates tokens per second (T/s) and displays them in bright magenta.
 - **Debug Mode:** Optionally prints all received tokens for debugging purposes.
+- **Raw Output:** `--RAW` flag returns unformatted output without syntax highlighting.
+- **Connection Handling:** Better error messages for connection issues and 15s timeout.
 
 ## Requirements
 
@@ -65,4 +67,8 @@ Note that this wrapper does not maintain any context or history between commands
 - **Enabling Debug Mode:**
     ```bash
     python llm.py --DEBUG "ffmpeg command to convert mp3 to opus and reverse audio"
+    ```
+- **Raw Output Mode:**
+    ```bash
+    python llm.py --RAW "how to grep for multiple patterns"
     ```
