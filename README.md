@@ -7,20 +7,20 @@ This tool is a simple CLI wrapper for the Ollama API running a local instance of
 
 ## Features
 
-- **Local Processing:** Uses the QWen 7B model running on your GPU.
+- **Local Processing:** Uses the qwen2.5-coder:7b running on your GPU (8GB VRAM required) by default. The model can be changed in source code or using the `--MODEL` parameter.
 - **Streamed Responses:** Processes streamed responses from the Ollama API.
 - **Syntax Highlighting:**
   - **Code Blocks:** Delimited by triple backticks are printed in **cyan**.
   - **Inline Code:** Delimited by single backticks are printed in **yellow**.
-- **Language Marker Stripping:** Automatically strips language markers such as `bash` or `sh` from code blocks.
-- **Performance Metrics:** Calculates tokens per second (T/s) and displays them in bright magenta.
-- **Debug Mode:** Optionally prints all received tokens for debugging purposes.
+- **Language Marker Stripping:** Automatically strips language markers such as `bash` or `sh` from code blocks for easier copy and pasting.
+- **Performance Metrics:** Calculates tokens per second (T/s) and displays them in magenta.
+- **Debug Mode:** `--DEBUG` flag optionally prints all received tokens for debugging purposes.
 - **Raw Output:** `--RAW` flag returns unformatted output without syntax highlighting.
 - **Connection Handling:** Better error messages for connection issues and 15s timeout.
 
 ## Requirements
 
-- **Server:** A server running the Ollama service with your desired model (e.g., QWen 7B).
+- **Server:** A server running the Ollama service with your desired model (e.g., `phi4`, `deepseek-r1:14b`, `gemma3:12b`).
 - **Python:** Python 3 with the `requests` library installed.
 
 ## Setup
@@ -46,9 +46,9 @@ On the server, ensure that the Ollama service is accessible externally:
     ```
 5. On the client side, set the IP address in the wrapper file (`llm.py`) by updating:
     ```python
-    API_URL = "http://100.116.219.163:11434/api/generate"
+    API_URL = "http://123.456.789.00:11434/api/generate"
     ```
-   Replace the IP with the address of your Ollama server if needed.
+   Replace the IP with the address of your Ollama server. The port should be 11434 by default.
 
 ### Local CLI Usage
 
